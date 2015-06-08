@@ -241,10 +241,31 @@ void FullCodeGenerator::Generate() {
   Variable* new_target_var = scope()->new_target_var();
   if (new_target_var != nullptr) {
     Comment cmnt(masm_, "[ new.target");
+
+    Label assign, construct, check_frame_marker;
+    __ movp(rax, Operand(rbp, StandardFrameConstants::kCallerFPOffset));
+    __ Cmp(Operand(rax, StandardFrameConstants::kContextOffset),
+           Smi::FromInt(StackFrame::ARGUMENTS_ADAPTOR));
+    __ j(not_equal, &check_frame_marker);
+    __ movp(rax, Operand(rax, StandardFrameConstants::kCallerFPOffset));
+
+    __ bind(&check_frame_marker);
+    __ Cmp(Operand(rax, StandardFrameConstants::kMarkerOffset),
+           Smi::FromInt(StackFrame::CONSTRUCT));
+    __ j(equal, &construct);
+
+    // [[Call]]
+    __ LoadRoot(rax, Heap::kUndefinedValueRootIndex);
+    __ jmp(&assign);
+
+    // [[Construct]]
+    __ bind(&construct);
     // new.target is parameter -2.
     int offset = 2 * kPointerSize + kFPOnStackSize + kPCOnStackSize +
                  (info_->scope()->num_parameters() - 1) * kPointerSize;
     __ movp(rax, Operand(rbp, offset));
+
+    __ bind(&assign);
     SetVar(new_target_var, rax, rbx, rdx);
   }
 

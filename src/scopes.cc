@@ -323,12 +323,11 @@ void Scope::Initialize() {
       // allocated during variable allocation.
       variables_.Declare(this, ast_value_factory_->arguments_string(), VAR,
                          Variable::ARGUMENTS, kCreatedInitialized);
-    }
 
-    if (subclass_constructor) {
-      DCHECK(!is_arrow_scope());
-      variables_.Declare(this, ast_value_factory_->new_target_string(), CONST,
-                         Variable::NORMAL, kCreatedInitialized);
+      if (FLAG_harmony_new_target || subclass_constructor) {
+        variables_.Declare(this, ast_value_factory_->new_target_string(), CONST,
+                           Variable::NORMAL, kCreatedInitialized);
+      }
     }
 
     if (IsConciseMethod(function_kind_) || IsConstructor(function_kind_) ||
