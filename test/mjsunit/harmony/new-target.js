@@ -6,24 +6,24 @@
 
 'use strict';
 
-(function TestBasics() {
-  var calls = 0;
-  class Base {}
-  class Derived extends Base {
-    constructor(expected) {
-      super();
-      assertEquals(expected, new.target);
-      calls++;
-    }
-  }
-  new Derived(Derived);
-  assertEquals(1, calls);
+// (function TestBasics() {
+//   var calls = 0;
+//   class Base {}
+//   class Derived extends Base {
+//     constructor(expected) {
+//       super();
+//       assertEquals(expected, new.target);
+//       calls++;
+//     }
+//   }
+//   new Derived(Derived);
+//   assertEquals(1, calls);
 
-  class Derived2 extends Derived {}
-  calls = 0;
-  new Derived2(Derived2);
-  assertEquals(1, calls);
-})();
+//   class Derived2 extends Derived {}
+//   calls = 0;
+//   new Derived2(Derived2);
+//   assertEquals(1, calls);
+// })();
 
 
 (function TestFunctionCall() {
@@ -63,5 +63,4 @@
   }
 
   new Derived(Derived);
-
 })();

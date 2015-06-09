@@ -163,6 +163,7 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
 
     // Push the function to invoke on the stack.
     if (uses_new_target) {
+      // __ int3();
       __ Push(rdx);
     }
     __ Push(rdi);
@@ -395,6 +396,8 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
     Generate_Runtime_NewObject(masm, create_memento, rdi, &count_incremented,
                                &allocated);
 
+    // if (uses_new_target) __ int3();
+
     // New object allocated.
     // rbx: newly allocated object
     __ bind(&allocated);
@@ -414,6 +417,7 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
     // Retrieve the function from the stack.
     __ Pop(rdi);
     if (uses_new_target) {
+      // __ int3();
       __ Pop(rdx);
     }
 
@@ -426,6 +430,7 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
     // conventions dictate that the called function pops the receiver.
     __ Push(rbx);
     if (uses_new_target) {
+      // __ int3();
       __ Push(rdx);
     }
     __ Push(rbx);
@@ -443,6 +448,12 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
     __ decp(rcx);
     __ j(greater_equal, &loop);
 
+
+    if (uses_new_target) {
+      // __ int3();
+      __ incp(rax);  // Pushed new.target.
+    }
+
     // Call the function.
     if (is_api_function) {
       __ movp(rsi, FieldOperand(rdi, JSFunction::kContextOffset));
@@ -453,6 +464,9 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
       ParameterCount actual(rax);
       __ InvokeFunction(rdi, actual, CALL_FUNCTION, NullCallWrapper());
     }
+
+
+    // if (uses_new_target) __ int3();
 
     // Store offset of return address for deoptimizer.
     if (!is_api_function && !uses_new_target) {
@@ -478,12 +492,16 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
     // Throw away the result of the constructor invocation and use the
     // on-stack receiver as the result.
     __ bind(&use_receiver);
-    __ movp(rax, Operand(rsp, (uses_new_target ? 1 : 0) * kPointerSize));
+    // if (uses_new_target) __ int3();
+    // __ movp(rax, Operand(rsp, (uses_new_target ? 1 : 0) * kPointerSize));
+    __ movp(rax, Operand(rsp, 0));
 
     // Restore the arguments count and leave the construct frame.
     __ bind(&exit);
     // Get arguments count.
-    int offset = (uses_new_target ? 2 : 1) * kPointerSize;
+    // if (uses_new_target) __ int3();
+    // int offset = (uses_new_target ? 2 : 1) * kPointerSize;
+    int offset = kPointerSize;
     __ movp(rbx, Operand(rsp, offset));
 
     // Leave construct frame.
