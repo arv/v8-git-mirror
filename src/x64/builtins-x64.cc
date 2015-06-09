@@ -136,6 +136,7 @@ static void Generate_Runtime_NewObject(MacroAssembler* masm,
 
 static void Generate_JSConstructStubHelper(MacroAssembler* masm,
                                            bool is_api_function,
+                                           bool uses_new_target,
                                            bool create_memento) {
   // ----------- S t a t e -------------
   //  -- rax: number of arguments
@@ -161,6 +162,9 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
     __ Push(rax);
 
     // Push the function to invoke on the stack.
+    if (uses_new_target) {
+      __ Push(rdx);
+    }
     __ Push(rdi);
 
     Label rt_call, normal_new, allocated, count_incremented;
@@ -409,6 +413,9 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
 
     // Retrieve the function from the stack.
     __ Pop(rdi);
+    if (uses_new_target) {
+      __ Pop(rdx);
+    }
 
     // Retrieve smi-tagged arguments count from the stack.
     __ movp(rax, Operand(rsp, 0));
@@ -418,6 +425,9 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
     // because we may have to return the original one and the calling
     // conventions dictate that the called function pops the receiver.
     __ Push(rbx);
+    if (uses_new_target) {
+      __ Push(rdx);
+    }
     __ Push(rbx);
 
     // Set up pointer to last argument.
@@ -445,7 +455,7 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
     }
 
     // Store offset of return address for deoptimizer.
-    if (!is_api_function) {
+    if (!is_api_function && !uses_new_target) {
       masm->isolate()->heap()->SetConstructStubDeoptPCOffset(masm->pc_offset());
     }
 
@@ -468,11 +478,13 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
     // Throw away the result of the constructor invocation and use the
     // on-stack receiver as the result.
     __ bind(&use_receiver);
-    __ movp(rax, Operand(rsp, 0));
+    __ movp(rax, Operand(rsp, (uses_new_target ? 1 : 0) * kPointerSize));
 
     // Restore the arguments count and leave the construct frame.
     __ bind(&exit);
-    __ movp(rbx, Operand(rsp, kPointerSize));  // Get arguments count.
+    // Get arguments count.
+    int offset = (uses_new_target ? 2 : 1) * kPointerSize;
+    __ movp(rbx, Operand(rsp, offset));
 
     // Leave construct frame.
   }
@@ -489,12 +501,17 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
 
 
 void Builtins::Generate_JSConstructStubGeneric(MacroAssembler* masm) {
-  Generate_JSConstructStubHelper(masm, false, FLAG_pretenuring_call_new);
+  Generate_JSConstructStubHelper(masm, false, false, FLAG_pretenuring_call_new);
+}
+
+
+void Builtins::Generate_JSConstructStubNewTarget(MacroAssembler* masm) {
+  Generate_JSConstructStubHelper(masm, false, true, false);
 }
 
 
 void Builtins::Generate_JSConstructStubApi(MacroAssembler* masm) {
-  Generate_JSConstructStubHelper(masm, true, false);
+  Generate_JSConstructStubHelper(masm, true, false, false);
 }
 
 

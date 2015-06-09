@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Flags: --harmony-classes --harmony-new-target
+// Flags: --harmony-classes --harmony-new-target --harmony-reflect
 
 'use strict';
 
@@ -31,4 +31,37 @@
     assertEquals(expected, new.target);
   }
   f(undefined);
+})();
+
+
+(function TestFunctionConstruct() {
+  function f(expected) {
+    assertEquals(expected, new.target);
+  }
+  var o = new f(f);
+  assertEquals(o.__proto__, f.prototype);
+
+  function g() {}
+  var o = Reflect.construct(f, [g], g);
+  assertEquals(o.__proto__, g.prototype);
+})();
+
+
+(function TestDerived() {
+  class Base {
+    constructor(expected, extra) {
+      print(arguments.length);
+      print(arguments[0]);
+      print(arguments[1]);
+      assertEquals(expected, new.target);
+    }
+  }
+  class Derived extends Base {
+    constructor(expected) {
+      super(expected);
+    }
+  }
+
+  new Derived(Derived);
+
 })();
