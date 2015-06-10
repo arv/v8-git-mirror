@@ -1405,11 +1405,6 @@ Handle<SharedFunctionInfo> Compiler::BuildFunctionInfo(
   result->set_script(*script);
   result->set_is_toplevel(false);
 
-  if (literal->scope()->new_target_var() != nullptr) {
-     Handle<Code> stub(isolate->builtins()->JSConstructStubNewTarget());
-     result->set_construct_stub(*stub);
-  }
-
   RecordFunctionCompilation(Logger::FUNCTION_TAG, &info, result);
   result->set_allows_lazy_compilation(literal->AllowsLazyCompilation());
   result->set_allows_lazy_compilation_without_context(allow_lazy_without_ctx);

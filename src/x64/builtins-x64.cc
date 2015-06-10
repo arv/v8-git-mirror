@@ -136,7 +136,6 @@ static void Generate_Runtime_NewObject(MacroAssembler* masm,
 
 static void Generate_JSConstructStubHelper(MacroAssembler* masm,
                                            bool is_api_function,
-                                           bool uses_new_target,
                                            bool create_memento) {
   // ----------- S t a t e -------------
   //  -- rax: number of arguments
@@ -162,10 +161,6 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
     __ Push(rax);
 
     // Push the function to invoke on the stack.
-    if (uses_new_target) {
-      // __ int3();
-      __ Push(rdx);
-    }
     __ Push(rdi);
 
     Label rt_call, normal_new, allocated, count_incremented;
@@ -396,8 +391,6 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
     Generate_Runtime_NewObject(masm, create_memento, rdi, &count_incremented,
                                &allocated);
 
-    // if (uses_new_target) __ int3();
-
     // New object allocated.
     // rbx: newly allocated object
     __ bind(&allocated);
@@ -416,10 +409,6 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
 
     // Retrieve the function from the stack.
     __ Pop(rdi);
-    if (uses_new_target) {
-      // __ int3();
-      __ Pop(rdx);
-    }
 
     // Retrieve smi-tagged arguments count from the stack.
     __ movp(rax, Operand(rsp, 0));
@@ -429,10 +418,6 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
     // because we may have to return the original one and the calling
     // conventions dictate that the called function pops the receiver.
     __ Push(rbx);
-    if (uses_new_target) {
-      // __ int3();
-      __ Push(rdx);
-    }
     __ Push(rbx);
 
     // Set up pointer to last argument.
@@ -448,12 +433,6 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
     __ decp(rcx);
     __ j(greater_equal, &loop);
 
-
-    if (uses_new_target) {
-      // __ int3();
-      __ incp(rax);  // Pushed new.target.
-    }
-
     // Call the function.
     if (is_api_function) {
       __ movp(rsi, FieldOperand(rdi, JSFunction::kContextOffset));
@@ -465,11 +444,8 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
       __ InvokeFunction(rdi, actual, CALL_FUNCTION, NullCallWrapper());
     }
 
-
-    // if (uses_new_target) __ int3();
-
     // Store offset of return address for deoptimizer.
-    if (!is_api_function && !uses_new_target) {
+    if (!is_api_function) {
       masm->isolate()->heap()->SetConstructStubDeoptPCOffset(masm->pc_offset());
     }
 
@@ -492,17 +468,11 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
     // Throw away the result of the constructor invocation and use the
     // on-stack receiver as the result.
     __ bind(&use_receiver);
-    // if (uses_new_target) __ int3();
-    // __ movp(rax, Operand(rsp, (uses_new_target ? 1 : 0) * kPointerSize));
     __ movp(rax, Operand(rsp, 0));
 
     // Restore the arguments count and leave the construct frame.
     __ bind(&exit);
-    // Get arguments count.
-    // if (uses_new_target) __ int3();
-    // int offset = (uses_new_target ? 2 : 1) * kPointerSize;
-    int offset = kPointerSize;
-    __ movp(rbx, Operand(rsp, offset));
+    __ movp(rbx, Operand(rsp, kPointerSize));  // Get arguments count.
 
     // Leave construct frame.
   }
@@ -519,17 +489,12 @@ static void Generate_JSConstructStubHelper(MacroAssembler* masm,
 
 
 void Builtins::Generate_JSConstructStubGeneric(MacroAssembler* masm) {
-  Generate_JSConstructStubHelper(masm, false, false, FLAG_pretenuring_call_new);
-}
-
-
-void Builtins::Generate_JSConstructStubNewTarget(MacroAssembler* masm) {
-  Generate_JSConstructStubHelper(masm, false, true, false);
+  Generate_JSConstructStubHelper(masm, false, FLAG_pretenuring_call_new);
 }
 
 
 void Builtins::Generate_JSConstructStubApi(MacroAssembler* masm) {
-  Generate_JSConstructStubHelper(masm, true, false, false);
+  Generate_JSConstructStubHelper(masm, true, false);
 }
 
 

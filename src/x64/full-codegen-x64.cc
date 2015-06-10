@@ -240,15 +240,15 @@ void FullCodeGenerator::Generate() {
 
   Variable* new_target_var = scope()->new_target_var();
   if (new_target_var != nullptr) {
+    // If this is a [[Construct]] then the new.target is passed as the -2
+    // argument. If it is a [[Call]] this is always undefined.
     Comment cmnt(masm_, "[ new.target");
-
     Label assign, construct, check_frame_marker;
     __ movp(rax, Operand(rbp, StandardFrameConstants::kCallerFPOffset));
     __ Cmp(Operand(rax, StandardFrameConstants::kContextOffset),
            Smi::FromInt(StackFrame::ARGUMENTS_ADAPTOR));
     __ j(not_equal, &check_frame_marker);
     __ movp(rax, Operand(rax, StandardFrameConstants::kCallerFPOffset));
-
     __ bind(&check_frame_marker);
     __ Cmp(Operand(rax, StandardFrameConstants::kMarkerOffset),
            Smi::FromInt(StackFrame::CONSTRUCT));

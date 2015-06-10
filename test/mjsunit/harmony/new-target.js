@@ -6,61 +6,49 @@
 
 'use strict';
 
-// (function TestBasics() {
-//   var calls = 0;
-//   class Base {}
-//   class Derived extends Base {
-//     constructor(expected) {
-//       super();
-//       assertEquals(expected, new.target);
-//       calls++;
-//     }
-//   }
-//   new Derived(Derived);
-//   assertEquals(1, calls);
+(function TestBasics() {
+  var calls = 0;
+  class Base {}
+  class Derived extends Base {
+    constructor(expected) {
+      super();
+      assertEquals(expected, new.target);
+      calls++;
+    }
+  }
+  new Derived(Derived);
+  assertEquals(1, calls);
 
-//   class Derived2 extends Derived {}
-//   calls = 0;
-//   new Derived2(Derived2);
-//   assertEquals(1, calls);
-// })();
+  class Derived2 extends Derived {}
+  calls = 0;
+  new Derived2(Derived2);
+  assertEquals(1, calls);
+})();
 
 
 (function TestFunctionCall() {
+  var calls = 0;
   function f(expected) {
+    calls++;
     assertEquals(expected, new.target);
   }
+
   f(undefined);
-})();
+  assertEquals(1, calls);
 
+  calls = 0;
+  f();
+  assertEquals(1, calls);
 
-(function TestFunctionConstruct() {
-  function f(expected) {
-    assertEquals(expected, new.target);
-  }
-  var o = new f(f);
-  assertEquals(o.__proto__, f.prototype);
+  calls = 0;
+  f(undefined, 'extra');
+  assertEquals(1, calls);
 
-  function g() {}
-  var o = Reflect.construct(f, [g], g);
-  assertEquals(o.__proto__, g.prototype);
-})();
+  calls = 0;
+  f.call({}, undefined);
+  assertEquals(1, calls);
 
-
-(function TestDerived() {
-  class Base {
-    constructor(expected, extra) {
-      print(arguments.length);
-      print(arguments[0]);
-      print(arguments[1]);
-      assertEquals(expected, new.target);
-    }
-  }
-  class Derived extends Base {
-    constructor(expected) {
-      super(expected);
-    }
-  }
-
-  new Derived(Derived);
+  calls = 0;
+  f.apply({}, [undefined]);
+  assertEquals(1, calls);
 })();
