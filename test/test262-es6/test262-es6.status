@@ -181,8 +181,6 @@
 
   'built-ins/Error/prototype/S15.11.4_A2': [FAIL],
 
-  'built-ins/Function/prototype/bind/15.3.4.5-15-2': [FAIL],
-
   # https://code.google.com/p/v8/issues/detail?id=4163
   'built-ins/GeneratorPrototype/next/context-constructor-invocation': [FAIL],
 
@@ -597,42 +595,6 @@
   'built-ins/Object/keys/15.2.3.14-1-1': [PASS, FAIL_OK],
   'built-ins/Object/keys/15.2.3.14-1-2': [PASS, FAIL_OK],
   'built-ins/Object/keys/15.2.3.14-1-3': [PASS, FAIL_OK],
-
-
-#######################################
-
-  # # String.prototype.contains renamed to 'S.p.includes'
-  # 'es6/String.prototype.contains/String.prototype.contains_FailBadLocation' : [FAIL_OK],
-  # 'es6/String.prototype.contains/String.prototype.contains_FailLocation' : [FAIL_OK],
-  # 'es6/String.prototype.contains/String.prototype.contains_FailMissingLetter' : [FAIL_OK],
-  # 'es6/String.prototype.contains/String.prototype.contains_lengthProp' : [FAIL_OK],
-  # 'es6/String.prototype.contains/String.prototype.contains_Success' : [FAIL_OK],
-  # 'es6/String.prototype.contains/String.prototype.contains_SuccessNoLocation' : [FAIL_OK],
-
-  # Function restricted "caller" and "arguments" properties are defined only on
-  # the intrinsic %FunctionPrototype% (and sloppy functions) in ES6
-  'language/statements/function/13.2-29-s': [FAIL_OK],
-  'language/statements/function/13.2-30-s': [FAIL_OK],
-  'language/statements/function/13.2-31-s': [FAIL_OK],
-  'language/statements/function/13.2-32-s': [FAIL_OK],
-  'language/statements/function/13.2-33-s': [FAIL_OK],
-  'language/statements/function/13.2-34-s': [FAIL_OK],
-  'language/statements/function/13.2-35-s': [FAIL_OK],
-  'language/statements/function/13.2-36-s': [FAIL_OK],
-  'language/statements/function/S13.2.3_A1': [FAIL_OK],
-  'built-ins/Function/prototype/bind/15.3.4.5-20-1': [FAIL_OK],
-  'built-ins/Function/prototype/bind/15.3.4.5-20-4': [FAIL_OK],
-  'built-ins/Function/prototype/bind/15.3.4.5-20-5': [FAIL_OK],
-  'built-ins/Function/prototype/bind/15.3.4.5-21-1': [FAIL_OK],
-  'built-ins/Function/prototype/bind/15.3.4.5-21-4': [FAIL_OK],
-  'built-ins/Function/prototype/bind/15.3.4.5-21-5': [FAIL_OK],
-
-  # These invalid tests have been fixed upstream.
-  'built-ins/Array/prototype/find/Array.prototype.find_remove-after-start': [FAIL],
-  'built-ins/Function/prototype/bind/15.3.4.5-15-2': [FAIL],
-
-
-###########################
 
   ############################ SKIPPED TESTS #############################
 
